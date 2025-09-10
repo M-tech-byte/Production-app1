@@ -2533,7 +2533,7 @@ import time
 from datetime import datetime, timedelta
 from io import BytesIO
 import matplotlib.pyplot as plt
-import scikit-learn
+
 
 # optional: KNN
 try:
@@ -3469,6 +3469,7 @@ with tabs[4]:  # adjust index depending on your layout query language
                     st.error(f"File {row['Filename']} not found on disk.")
         else:
             st.info("You have not saved any files yet.")
+
 
 
 
