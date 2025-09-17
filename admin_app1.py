@@ -2254,6 +2254,8 @@ with tabs[1]:
 
         myfiles = cur.fetchall()
         files_df = pd.DataFrame(myfiles, columns=['id','filename','filepath','field_name','uploaded_at']) if myfiles else pd.DataFrame()
+  
+
 
     if files_df.empty:
         st.info("No uploads found. Use Production Input to upload or create a manual workspace.")
@@ -2995,7 +2997,7 @@ with tabs[4]:  # adjust index depending on your layout
             if rows:
                 df_files = pd.DataFrame(
                     rows, 
-                    columns=["Filepath", "Filename", "Field", "Notes", "Uploaded At"]
+                    columns=["Filepath", "Filename", "Field", "Notes", "Uploaded At", "Uploaded By"]
                 )
                 for idx, row in df_files.iterrows():
                     st.markdown(f"**{row['Filename']}** — Field: {row['Field']} | {row['Uploaded At']}")
@@ -3014,6 +3016,7 @@ with tabs[4]:  # adjust index depending on your layout
                 st.info("You have not saved any files yet.")
     else:
         st.info("Please log in to view saved files.")  # ✅ safe when not logged in
+
 
 
 
