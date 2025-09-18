@@ -6229,7 +6229,7 @@ elif user and user.get('is_admin'):
                     else:
                         st.error(result["message"])
 
-    else:
+else:
         st.info("You are not an admin. Admins can view/download uploads.")
 
 
@@ -6977,6 +6977,7 @@ You now have full admin privileges.
 
     finally:
         conn.close()
+
 
 
 
