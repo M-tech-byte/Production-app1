@@ -4771,6 +4771,7 @@
 #########################################################################################################
 ######################################################################
 #####################################################################
+################################################
 # production_manager_full.py
 import streamlit as st
 import pandas as pd
@@ -6509,14 +6510,7 @@ with tabs[4]:  # adjust index depending on your layout
                 st.info("You have not saved any files yet.")
     else:
         st.info("Please log in to view saved files.")  # ✅ safe when not logged in
-
-
-
-
-
-
-
-
+        
 import sqlite3
 import hashlib
 import smtplib
@@ -6594,6 +6588,7 @@ def create_admin(username, password, email):
 # --- Run directly ---
 if __name__ == "__main__":
     create_admin("superadmin", "StrongPass123!", "hafsatuxy@gmail.com")
+
 
 
 
