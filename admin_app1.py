@@ -5345,6 +5345,32 @@ elif action == 'Forgot password':
             st.sidebar.error("Invalid user id")
 
 # ---------- LOGIN ----------
+def authenticate(username_or_email, password):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    hashed_pw = hash_password(password)
+
+    cur.execute("""
+        SELECT id, username, email, is_verified, is_admin
+        FROM users
+        WHERE (username=? OR email=?) AND password_hash=?
+    """, (username_or_email, username_or_email, hashed_pw))
+    row = cur.fetchone()
+    conn.close()
+
+    if row:
+        user = {
+            "id": row[0],
+            "username": row[1],
+            "email": row[2],
+            "is_verified": bool(row[3]),
+            "is_admin": bool(row[4])   # 👈 crucial fix
+        }
+        return True, user
+    else:
+        return False, None
+
 elif action == "Login":
     login_user = st.sidebar.text_input("Username or email", key='login_user')
     login_pass = st.sidebar.text_input("Password", type='password', key='login_pass')
@@ -5397,6 +5423,38 @@ elif action == "Login":
     else:
         # ✅ Logged in successfully → safe to use user['id']
         st.sidebar.success(f"Logged in as {user['username']}")
+
+# --- Admin Dashboard ---
+if user.get("is_admin"):
+    st.markdown("## 👑 Admin Dashboard")
+    st.success("Welcome, Admin!")
+
+    # Example: View all users
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT id, username, email, is_verified, is_admin FROM users ORDER BY id")
+    all_users = cur.fetchall()
+    conn.close()
+
+    if all_users:
+        df_users = pd.DataFrame(all_users, columns=["ID", "Username", "Email", "Verified", "Admin"])
+        st.write("### Registered Users")
+        st.dataframe(df_users)
+
+    # Example: Admin-only actions
+    if st.button("🗑️ Delete All Non-Admin Users"):
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("DELETE FROM users WHERE is_admin=0")
+        conn.commit()
+        conn.close()
+        st.warning("All non-admin users deleted!")
+        st.experimental_rerun()
+
+
+
+
+
 
         # Example: show uploads for this user
         cur.execute(
@@ -6994,6 +7052,7 @@ You now have full admin privileges.
 
     finally:
         conn.close()
+
 
 
 
