@@ -6056,6 +6056,52 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
+# ######################################################
+# # ------------------ ACCOUNT & ADMIN ------------------
+# with tabs[2]:
+#     st.header("Account & Admin")
+
+#     st.subheader("Account info")
+#     if user:
+#         st.json(user)
+#     else:
+#         st.warning("⚠️ No user logged in")
+#     st.markdown("---")
+
+# # 🔎 Check if any admin exists
+# cur.execute("SELECT COUNT(*) FROM users WHERE is_admin=1")
+# admin_count = cur.fetchone()[0]
+
+# # 🚨 Reset Admins Button (for setup/debugging)
+# if st.button("🔄 Reset Admins"):
+#     cur.execute("DELETE FROM users WHERE is_admin=1")
+#     conn.commit()
+#     st.success("✅ All admins removed. Please refresh the page to create the first admin again.")
+#     st.stop()  # stop execution so the form shows on next reload
+
+# if admin_count == 0:
+#     # 🚨 No admin yet → show first admin signup form
+#     st.warning("🚨 No admin found. Please create the first admin account.")
+#     with st.form("first_admin_form"):
+#         st.subheader("👑 First Admin Signup")
+#         fa_user = st.text_input("Admin Username")
+#         fa_email = st.text_input("Admin Email")
+#         fa_pass = st.text_input("Password", type="password")
+#         fa_confirm = st.text_input("Confirm Password", type="password")
+#         submit_fa = st.form_submit_button("Create First Admin")
+
+#         if submit_fa:
+#             if fa_pass != fa_confirm:
+#                 st.error("❌ Passwords do not match.")
+#             elif not fa_user or not fa_email or not fa_pass:
+#                 st.warning("⚠️ Please fill all fields.")
+#             else:
+#                 result = create_admin(fa_user, fa_pass, fa_email)
+#                 if result["status"] == "success":
+#                     st.success(result["message"])
+#                 else:
+#                     st.error(result["message"])
+
 ######################################################
 # ------------------ ACCOUNT & ADMIN ------------------
 with tabs[2]:
@@ -6067,44 +6113,43 @@ with tabs[2]:
     else:
         st.warning("⚠️ No user logged in")
     st.markdown("---")
-
-# 🔎 Check if any admin exists
+    
+ # 🔎 Check if any admin exists
 cur.execute("SELECT COUNT(*) FROM users WHERE is_admin=1")
 admin_count = cur.fetchone()[0]
 
-# 🚨 Reset Admins Button (for setup/debugging)
+ # 🚨 Reset Admins Button (for setup/debugging)
 if st.button("🔄 Reset Admins"):
-    cur.execute("DELETE FROM users WHERE is_admin=1")
-    conn.commit()
-    st.success("✅ All admins removed. Please refresh the page to create the first admin again.")
-    st.stop()  # stop execution so the form shows on next reload
+      cur.execute("DELETE FROM users WHERE is_admin=1")
+      conn.commit()
+      st.success("✅ All admins removed. Please refresh the page to create the first admin again.")
+      st.stop()  # stop execution so the form shows on next reload
 
 if admin_count == 0:
-    # 🚨 No admin yet → show first admin signup form
-    st.warning("🚨 No admin found. Please create the first admin account.")
-    with st.form("first_admin_form"):
-        st.subheader("👑 First Admin Signup")
-        fa_user = st.text_input("Admin Username")
-        fa_email = st.text_input("Admin Email")
-        fa_pass = st.text_input("Password", type="password")
-        fa_confirm = st.text_input("Confirm Password", type="password")
-        submit_fa = st.form_submit_button("Create First Admin")
+     # 🚨 No admin yet → show first admin signup form
+      st.warning("🚨 No admin found. Please create the first admin account.")
+      with st.form("first_admin_form"):
+         st.subheader("👑 First Admin Signup")
+         fa_user = st.text_input("Admin Username")
+         fa_email = st.text_input("Admin Email")
+         fa_pass = st.text_input("Password", type="password")
+         fa_confirm = st.text_input("Confirm Password", type="password")
+         submit_fa = st.form_submit_button("Create First Admin")
 
-        if submit_fa:
-            if fa_pass != fa_confirm:
-                st.error("❌ Passwords do not match.")
-            elif not fa_user or not fa_email or not fa_pass:
-                st.warning("⚠️ Please fill all fields.")
-            else:
-                result = create_admin(fa_user, fa_pass, fa_email)
-                if result["status"] == "success":
-                    st.success(result["message"])
-                else:
-                    st.error(result["message"])
-
+         if submit_fa:
+             if fa_pass != fa_confirm:
+                 st.error("❌ Passwords do not match.")
+             elif not fa_user or not fa_email or not fa_pass:
+                 st.warning("⚠️ Please fill all fields.")
+             else:
+                 result = create_admin(fa_user, fa_pass, fa_email)
+                 if result["status"] == "success":
+                     st.success(result["message"])
+                 else:
+                     st.error(result["message"])
 
     # ---------------- Admin features for logged-in admins ----------------
-    elif user and user.get('is_admin'):
+elif user and user.get('is_admin'):
         st.subheader("🔑 Admin: Manage All Uploads")
 
         try:
