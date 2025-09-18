@@ -6065,6 +6065,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
+
+
 # ------------------ ACCOUNT & ADMIN ------------------
 with tabs[2]:
     st.header("Account & Admin")
@@ -6079,62 +6081,103 @@ with tabs[2]:
     # Admin features
     if user and user.get('is_admin'):
         st.subheader("🔑 Admin: Manage All Uploads")
+        # your existing code for managing uploads...
 
-        try:
-            # Get all users
-            cur.execute("SELECT id, username FROM users ORDER BY username ASC")
-            all_users = cur.fetchall()
-        except Exception as e:
-            logging.error(f"Failed to fetch users: {e}", exc_info=True)
-            all_users = []
+        st.markdown("---")
 
-        if all_users:
-            # User filter dropdown
-            usernames = {u[1]: u[0] for u in all_users}
-            selected_user = st.selectbox("👤 Select a user", list(usernames.keys()))
+        # 🔹 Admin Signup Form
+        with st.form("admin_signup_form"):
+            st.subheader("👑 Create New Admin")
+            new_admin_user = st.text_input("Admin Username")
+            new_admin_email = st.text_input("Admin Email")
+            new_admin_pass = st.text_input("Password", type="password")
+            confirm_pass = st.text_input("Confirm Password", type="password")
+            submit_admin = st.form_submit_button("Create Admin")
 
-            # Fetch that user’s uploads
-            cur.execute(
-                "SELECT filename, uploaded_at, field_name, filepath FROM uploads WHERE user_id=? ORDER BY uploaded_at DESC",
-                (usernames[selected_user],)
-            )
-            user_uploads = cur.fetchall()
-
-            if user_uploads:
-                df_user = pd.DataFrame(user_uploads, columns=['Filename', 'Uploaded At', 'Field', 'Filepath'])
-                st.dataframe(df_user[['Filename', 'Uploaded At', 'Field']])
-
-                # Pick a file
-                file_choice = st.selectbox("📂 Select a file to view", df_user['Filename'])
-
-                # Show preview or allow download
-                chosen_row = df_user[df_user['Filename'] == file_choice].iloc[0]
-                filepath = chosen_row['Filepath']
-
-                if os.path.exists(filepath):
-                    try:
-                        df_preview = pd.read_csv(filepath)
-                        st.write("📊 Preview of selected file:")
-                        st.dataframe(df_preview.head(20))  # show first 20 rows
-
-                        # Allow download
-                        with open(filepath, "rb") as f:
-                            st.download_button(
-                                label="⬇️ Download file",
-                                data=f,
-                                file_name=chosen_row['Filename'],
-                                mime="text/csv"
-                            )
-                    except Exception as e:
-                        logging.error(f"Failed to read file {filepath}: {e}", exc_info=True)
-                        st.error("⚠️ Could not open this file.")
+            if submit_admin:
+                if new_admin_pass != confirm_pass:
+                    st.error("❌ Passwords do not match.")
+                elif not new_admin_user or not new_admin_email or not new_admin_pass:
+                    st.warning("⚠️ Please fill all fields.")
                 else:
-                    st.error("⚠️ File not found on disk.")
-            else:
-                st.info("This user has no uploads.")
-        else:
-            st.info("No users found in system.")
+                    result = create_admin(new_admin_user, new_admin_pass, new_admin_email)
+                    if result["status"] == "success":
+                        st.success(result["message"])
+                    else:
+                        st.error(result["message"])
+    else:
+        st.info("You are not an admin. Admins can view/download uploads.")
 
+########################################
+# # ------------------ ACCOUNT & ADMIN ------------------
+# with tabs[2]:
+#     st.header("Account & Admin")
+
+#     st.subheader("Account info")
+#     if user:
+#         st.json(user)
+#     else:
+#         st.warning("⚠️ No user logged in")
+#     st.markdown("---")
+
+#     # Admin features
+#     if user and user.get('is_admin'):
+#         st.subheader("🔑 Admin: Manage All Uploads")
+
+#         try:
+#             # Get all users
+#             cur.execute("SELECT id, username FROM users ORDER BY username ASC")
+#             all_users = cur.fetchall()
+#         except Exception as e:
+#             logging.error(f"Failed to fetch users: {e}", exc_info=True)
+#             all_users = []
+
+#         if all_users:
+#             # User filter dropdown
+#             usernames = {u[1]: u[0] for u in all_users}
+#             selected_user = st.selectbox("👤 Select a user", list(usernames.keys()))
+
+#             # Fetch that user’s uploads
+#             cur.execute(
+#                 "SELECT filename, uploaded_at, field_name, filepath FROM uploads WHERE user_id=? ORDER BY uploaded_at DESC",
+#                 (usernames[selected_user],)
+#             )
+#             user_uploads = cur.fetchall()
+
+#             if user_uploads:
+#                 df_user = pd.DataFrame(user_uploads, columns=['Filename', 'Uploaded At', 'Field', 'Filepath'])
+#                 st.dataframe(df_user[['Filename', 'Uploaded At', 'Field']])
+
+#                 # Pick a file
+#                 file_choice = st.selectbox("📂 Select a file to view", df_user['Filename'])
+
+#                 # Show preview or allow download
+#                 chosen_row = df_user[df_user['Filename'] == file_choice].iloc[0]
+#                 filepath = chosen_row['Filepath']
+
+#                 if os.path.exists(filepath):
+#                     try:
+#                         df_preview = pd.read_csv(filepath)
+#                         st.write("📊 Preview of selected file:")
+#                         st.dataframe(df_preview.head(20))  # show first 20 rows
+
+#                         # Allow download
+#                         with open(filepath, "rb") as f:
+#                             st.download_button(
+#                                 label="⬇️ Download file",
+#                                 data=f,
+#                                 file_name=chosen_row['Filename'],
+#                                 mime="text/csv"
+#                             )
+#                     except Exception as e:
+#                         logging.error(f"Failed to read file {filepath}: {e}", exc_info=True)
+#                         st.error("⚠️ Could not open this file.")
+#                 else:
+#                     st.error("⚠️ File not found on disk.")
+#             else:
+#                 st.info("This user has no uploads.")
+#         else:
+#             st.info("No users found in system.")
 
 
 #################
@@ -6510,7 +6553,9 @@ with tabs[4]:  # adjust index depending on your layout
                 st.info("You have not saved any files yet.")
     else:
         st.info("Please log in to view saved files.")  # ✅ safe when not logged in
-        
+
+
+
 import sqlite3
 import hashlib
 import smtplib
@@ -6521,15 +6566,15 @@ from datetime import datetime
 DB_PATH = "production_app.db"
 
 # --- Password Hashing ---
-def hash_password(password):
-    salt = "static_salt_change_me"  # must match your app's salt
+def hash_password(password: str) -> str:
+    salt = "static_salt_change_me"  # should match your app’s user signup
     return hashlib.sha256((salt + password).encode()).hexdigest()
 
 # --- Email Notification with Brevo ---
-def send_email(to_email, subject, body):
-    sender_email = "hafsatuxy@gmail.com"   # must be verified in Brevo
-    brevo_login = "96cf99001@smtp-brevo.com"  # from Brevo dashboard
-    brevo_password = "OKnmRy6V7fUY509I"       # SMTP key from Brevo
+def send_email(to_email: str, subject: str, body: str) -> bool:
+    sender_email = "hafsatuxy@gmail.com"          # must be verified in Brevo
+    brevo_login = "96cf99001@smtp-brevo.com"      # from Brevo dashboard
+    brevo_password = "OKnmRy6V7fUY509I"           # SMTP key from Brevo
     smtp_server = "smtp-relay.brevo.com"
     smtp_port = 587
 
@@ -6546,48 +6591,62 @@ def send_email(to_email, subject, body):
         server.sendmail(sender_email, to_email, msg.as_string())
         server.quit()
 
-        print("✅ Email sent successfully!")
         return True
     except Exception as e:
         print("❌ Failed to send email:", e)
         return False
 
 # --- Create Admin Function ---
-def create_admin(username, password, email):
+def create_admin(username: str, password: str, email: str) -> dict:
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
+    # Ensure users table exists
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        email TEXT NOT NULL,
+        is_admin INTEGER DEFAULT 0,
+        is_verified INTEGER DEFAULT 0,
+        created_at TEXT
+    )
+    """)
+
     hashed_pw = hash_password(password)
 
-    # Ensure no duplicate admin with same username
-    cur.execute("DELETE FROM users WHERE username = ?", (username,))
+    try:
+        cur.execute("""
+           INSERT INTO users (username, password_hash, is_admin, email, is_verified, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)
+        """, (username, hashed_pw, 1, email, 1, datetime.utcnow().isoformat()))
 
-    # Insert admin (correct column name: password_hash)
-    # cur.execute("""
-    #     INSERT INTO users (username, email, password_hash, is_admin, created_at)
-    #     VALUES (?, ?, ?, ?, ?)
-    # """, (username, email, hashed_pw, 1, datetime.utcnow().isoformat()))
+        conn.commit()
 
-    # Insert admin (correct column name: password_hash)
-    cur.execute("""
-       INSERT INTO users (username, password_hash, is_admin, email, is_verified, created_at)
-    VALUES (?, ?, ?, ?, ?, datetime('now'))
-    """, (username, hashed_pw, 1, email, 1))
+        # Send notification email
+        subject = "🔐 New Admin Account Created"
+        body = f"""
+Hello {username},
+
+✅ Your admin account has been created successfully.
+
+📧 Email: {email}
+👑 Role: Admin
+
+You now have full admin privileges.
+        """
+        send_email(email, subject, body)
+
+        return {"status": "success", "message": f"Admin '{username}' created and notified via email."}
+
+    except sqlite3.IntegrityError:
+        return {"status": "error", "message": f"Username '{username}' already exists."}
+
+    finally:
+        conn.close()
 
 
-    conn.commit()
-    conn.close()
-
-    print(f"✅ Admin '{username}' created successfully.")
-
-    # Send notification email
-    subject = "🔐 New Admin Account Created"
-    body = f"Hello {username},\n\nYour admin account has been created successfully.\n\nEmail: {email}\nRole: Admin"
-    send_email(email, subject, body)
-
-# --- Run directly ---
-if __name__ == "__main__":
-    create_admin("superadmin", "StrongPass123!", "hafsatuxy@gmail.com")
 
 
 
