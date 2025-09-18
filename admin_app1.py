@@ -5589,7 +5589,7 @@ else:
     )
     uploads = cur.fetchall()
 
-    st.write("### Your Uploads")
+    # st.write("### Your Uploads")
     if uploads:
         df = pd.DataFrame(uploads, columns=["ID","Filename","Path","Field","Uploaded At"])
         st.dataframe(df)
@@ -6103,6 +6103,23 @@ logging.basicConfig(
 #                     st.error(result["message"])
 
 ######################################################
+# --- imports ---
+import sqlite3
+import hashlib
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime
+
+DB_PATH = "production_app.db"
+
+# --- define create_admin here ---
+def create_admin(username: str, password: str, email: str) -> dict:
+    # (your function code here)
+    ...
+    return {"status": "success", "message": f"Admin '{username}' created and notified via email."}
+
+# --- now the Streamlit UI starts ---
 # ------------------ ACCOUNT & ADMIN ------------------
 with tabs[2]:
     st.header("Account & Admin")
@@ -6977,6 +6994,7 @@ You now have full admin privileges.
 
     finally:
         conn.close()
+
 
 
 
