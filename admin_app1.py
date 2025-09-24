@@ -7561,44 +7561,39 @@ def create_admin(username, password, email):
     send_email(email, subject, body)
     return f"✅ Admin '{username}' created and verified."
 
+
+# ✅ Helper to check if any admin exists
+def get_admin_count():
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM users WHERE is_admin=1")
+        return cur.fetchone()[0]
+
 # ---------- STREAMLIT ONE-TIME ADMIN CREATOR ----------
-st.sidebar.markdown("### 🔑 Create Initial Admin")
-with st.sidebar.form("create_first_admin"):
+admin_count = get_admin_count()   # 🔑 Check if any admin exists
 
-    # ✅ Helper to check if any admin exists
-    def get_admin_count():
-        # This opens and closes the DB connection safely each time
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute("SELECT COUNT(*) FROM users WHERE is_admin=1")
-            return cur.fetchone()[0]
+if admin_count == 0:
+    # 🚨 No admin exists → show one-time signup form
+    st.sidebar.markdown("### 🔑 Create Initial Admin")
+    with st.sidebar.form("create_first_admin"):
+        st.write("Use this only for the **very first admin** (or emergencies).")
+        ad_user  = st.text_input("Admin Username")
+        ad_email = st.text_input("Admin Email")
+        ad_pass  = st.text_input("Password", type="password")
+        ad_conf  = st.text_input("Confirm Password", type="password")
+        submit   = st.form_submit_button("Create Admin")
 
-    # ---------- STREAMLIT ONE-TIME ADMIN CREATOR ----------
-    admin_count = get_admin_count()   # 🔑 Call the helper first
-
-    if admin_count == 0:
-        # 🚨 No admin exists → show one-time signup form
-        st.sidebar.markdown("### 🔑 Create Initial Admin")
-        with st.sidebar.form("create_first_admin"):
-            st.write("Use this only for the **very first admin** (or emergencies).")
-            ad_user  = st.text_input("Admin Username")
-            ad_email = st.text_input("Admin Email")
-            ad_pass  = st.text_input("Password", type="password")
-            ad_conf  = st.text_input("Confirm Password", type="password")
-            submit   = st.form_submit_button("Create Admin")
-
-            if submit:
-                if not ad_user or not ad_email or not ad_pass:
-                    st.error("⚠️ All fields are required.")
-                elif ad_pass != ad_conf:
-                    st.error("❌ Passwords do not match.")
-                else:
-                    msg = create_admin(ad_user, ad_pass, ad_email)
-                    st.success(msg)
-    else:
-        # ✅ At least one admin exists → hide the form
-        st.sidebar.info("👑 Admin already exists. Use normal login.")
-
+        if submit:
+            if not ad_user or not ad_email or not ad_pass:
+                st.error("⚠️ All fields are required.")
+            elif ad_pass != ad_conf:
+                st.error("❌ Passwords do not match.")
+            else:
+                msg = create_admin(ad_user, ad_pass, ad_email)
+                st.success(msg)
+else:
+    # ✅ At least one admin exists → hide the form
+    st.sidebar.info("👑 Admin already exists. Use normal login.")
 
 
 # ------------------ SIDEBAR: AUTH, DURATION ------------------
@@ -8690,6 +8685,7 @@ with tabs[4]:  # adjust index depending on your layout
                 st.info("You have not saved any files yet.")
     else:
         st.info("Please log in to view saved files.")  # ✅ safe when not logged in
+
 
 
 
